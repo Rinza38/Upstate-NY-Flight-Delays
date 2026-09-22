@@ -60,8 +60,9 @@ import matplotlib.pyplot as plt
 # ============================================================================
 # 2. CONFIG - edit paths here once; everything else follows
 # ============================================================================
-ORIGIN_CSV_PATH = "/content/drive/MyDrive/418 Final Folder/df_mergedorigin.csv"
-DEST_CSV_PATH   = "/content/drive/MyDrive/418 Final Folder/df_mergeddest.csv"
+
+ORIGIN_CSV_PATH = r"C:\Users\pcheu\Documents\IST 418\Upstate-NY-Flight-Delays\Data\df_mergedorigin.parquet"
+DEST_CSV_PATH   = r"C:\Users\pcheu\Documents\IST 418\Upstate-NY-Flight-Delays\Data\df_mergeddest.parquet"
 
 # Columns pulled from the raw merged CSV (>100 cols) before modeling.
 COLS_TO_KEEP = [
@@ -172,7 +173,7 @@ def run_classifier(spark, csv_path, label_col, time_col, positive_rate_label="")
     """
     print(f"\n=== CLASSIFIER: {label_col} from {csv_path} ===")
 
-    flight_df = spark.read.csv(csv_path, header=True, inferSchema=True)
+    flight_df = spark.read.parquet(csv_path)
     df = flight_df.select(_existing(flight_df, COLS_TO_KEEP + ["ELEVATION", "Elevation"]))
 
     # Detect elevation casing and standardize to "ELEVATION".
@@ -187,7 +188,9 @@ def run_classifier(spark, csv_path, label_col, time_col, positive_rate_label="")
 
     # Label + time-derived features.
     df = df.withColumn(label_col, F.col(label_col).cast(DoubleType()))
-    df = df.withColumn(time_col, F.col(time_col).cast(IntegerType()))
+    numeric_cols = ["CRSDepTime", "CRSArrTime", "Distance"]  # adjust to your schema
+    for c in numeric_cols:
+        df = df.withColumn(c, F.col(c).cast("double").cast("int"))
     df = df.withColumn("dep_hour", (F.col(time_col) / 100).cast("int"))
 
     # Build the feature list, adding elevation only if it exists.

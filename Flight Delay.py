@@ -1,4 +1,4 @@
-# IST 418 Final Project — Combined Notebook
+# IST 418 Final Project
 
 **Pipeline:** Upstate NY flight delays predicted with PySpark on a merged BTS + NOAA dataset (2015–2025).
 
